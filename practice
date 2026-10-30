@@ -1,2 +1,11 @@
 aaaaaa
 ssasdasd
+
+10/30 15:54
+地図を入れました
+npm install leaflet react-leaflet
+
+npm install -D @types/leaflet
+
+下のやつを打つとできます
+npx expo start --web --clear
