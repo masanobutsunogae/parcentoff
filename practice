@@ -1,2 +1,20 @@
 aaaaaa
 ssasdasd
+
+
+src/appの中にあるのがページです
+index.tsxがホーム画面
+search.tsxが検索画面
+favorites.tsxがお気に入り画面
+mypage.tsxがマイページ画面
+
+src/componentsの中に画面下の切り替えメニューがあります
+app-tabs.tsxがiOSアプリ用のメニュー
+app-tabs.web.tsxがwebアプリ用のメニュー
+であり、パソコンでのメニューを変更するには
+app-tabs.web.tsx
+を変更してください
+
+実際に動かすときはターミナルで
+npx expo start
+を実行する
