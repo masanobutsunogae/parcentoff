@@ -1,3 +1,4 @@
+
 import { NativeTabs } from 'expo-router/native-tabs';
 import { useColorScheme } from 'react-native';
 
@@ -11,20 +12,41 @@ export default function AppTabs() {
     <NativeTabs
       backgroundColor={colors.background}
       indicatorColor={colors.backgroundElement}
-      labelStyle={{ selected: { color: colors.text } }}>
+      labelStyle={{ selected: { color: colors.text } }}
+    >
+      {/* ホーム */}
       <NativeTabs.Trigger name="index">
-        <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Label>ホーム</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon
-          src={require('@/assets/images/tabIcons/home.png')}
-          renderingMode="template"
+          sf="house.fill"
+          md="home"
         />
       </NativeTabs.Trigger>
 
-      <NativeTabs.Trigger name="explore">
-        <NativeTabs.Trigger.Label>Explore</NativeTabs.Trigger.Label>
+      {/* 検索 */}
+      <NativeTabs.Trigger name="search">
+        <NativeTabs.Trigger.Label>検索</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon
-          src={require('@/assets/images/tabIcons/explore.png')}
-          renderingMode="template"
+          sf="map.fill"
+          md="map"
+        />
+      </NativeTabs.Trigger>
+
+      {/* お気に入り */}
+      <NativeTabs.Trigger name="favorites">
+        <NativeTabs.Trigger.Label>お気に入り</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon
+          sf="heart.fill"
+          md="favorite"
+        />
+      </NativeTabs.Trigger>
+
+      {/* マイページ */}
+      <NativeTabs.Trigger name="mypage">
+        <NativeTabs.Trigger.Label>マイページ</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon
+          sf="person.fill"
+          md="person"
         />
       </NativeTabs.Trigger>
     </NativeTabs>
