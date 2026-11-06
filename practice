@@ -23,6 +23,10 @@ app-tabs.web.tsxがwebアプリ用のメニュー
 app-tabs.web.tsx
 を変更してください
 
+マイページにおけるアイコン表示を行うために
+npm install @expo/vector-icons
+を実行してください
+
 実際に動かすときはターミナルで
 npx expo start
 を実行する

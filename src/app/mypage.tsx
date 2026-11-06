@@ -47,8 +47,6 @@ return (
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
     backgroundColor: '#fff',
   },
   contentContainer: {
@@ -124,7 +122,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   menuTitle: {
-    fontSize: 24,
+    fontSize: 16,
     fontWeight: 'bold',
     marginBottom: 12,
   },
