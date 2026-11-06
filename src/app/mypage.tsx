@@ -1,13 +1,15 @@
 //マイページ画面
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function MyPageScreen() {
-  const menuItems = [
-    { id: 'photo', title:'写真で検索', icon:'image-outline', color:'#4A90E2', bg:'#EBF3FF' },
-    { id: 'game' , title:'ゲーム'    , icon:'game-controller-outline', color:'#F5A623', bg:'#FFF7E6' },
-    { id: 'help' , title:'ヘルプ'    , icon:'help-circle-outline', color:'#7ED321', bg:'#F4FCE3' },
-    { id: 'info' , title:'情報を提供する', icon:'information-circle-outline', color:'#9013FE', bg:'#F8F0FF' },
+  const router = useRouter();
+  const menuItems= [
+    { id: 'photo', title:'写真で検索', icon:'image-outline', color:'#4A90E2', bg:'#EBF3FF'},
+    { id: 'game' , title:'ゲーム'    , icon:'game-controller-outline', color:'#F5A623', bg:'#FFF7E6'},
+    { id: 'help' , title:'ヘルプ'    , icon:'help-circle-outline', color:'#7ED321', bg:'#F4FCE3'},
+    { id: 'info' , title:'情報を提供する', icon:'information-circle-outline', color:'#9013FE', bg:'#F8F0FF'},
   ];
 return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
@@ -33,7 +35,18 @@ return (
             key={item.id}
             style={[styles.menuCard, { backgroundColor: item.bg }]}
             activeOpacity={0.8}
-            onPress={() => console.log(`${item.title}が押されました`)}
+            // onPress={() => {
+            //   let path = '';
+            //   if (item.id === 'photo') {
+            //     path = '/photo';
+            //   } else if (item.id === 'game') {
+            //     path = '/game';
+            //   } else if (item.id === 'help') {
+            //     path = '/help';
+            //   }
+            //   router.push(path);
+            // }}
+            onPress={() => {console.log(`Pressed ${item.title}`);}}
           >
             <Ionicons name={item.icon as any} size={36} color={item.color} style={styles.menuIcon} />
             <Text style={styles.menuTitle}>{item.title}</Text>
