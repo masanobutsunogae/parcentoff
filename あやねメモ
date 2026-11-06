@@ -1,1 +1,5 @@
 install expo install react-native-maps
+で地図の導入ができるかも
+
+npx expo install @expo/vector-icons
+でmypage.tsxのエラーが消える。
