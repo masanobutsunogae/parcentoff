@@ -254,7 +254,7 @@ export default function SearchScreen() {
           </Pressable>
         </View>
 
-        <ScrollView contentContainerStyle={{ padding: 18, paddingBottom: 110, gap: 15 }}>
+        <ScrollView contentContainerStyle={{ padding: 18, paddingBottom: 36, gap: 15 }}>
           <View style={{ backgroundColor: '#EAF4E9', borderRadius: 10, padding: 13, gap: 5 }}>
             <Text style={{ color: '#287A3B', fontSize: 12, fontWeight: 'bold' }}>投稿先の店舗</Text>
             <Text style={{ color: '#243024', fontSize: 16, fontWeight: 'bold' }}>
