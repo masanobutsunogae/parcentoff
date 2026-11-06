@@ -7,10 +7,8 @@ npm install leaflet react-leaflet
 
 npm install -D @types/leaflet
 
-下のやつを打つとできます
+下のやつを打つと地図入りでできます
 npx expo start --web --clear
-aaaaaaaaaaaa
-aaaaa
 
 src/appの中にあるのがページです
 index.tsxがホーム画面
