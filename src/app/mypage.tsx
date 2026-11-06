@@ -17,7 +17,6 @@ return (
           <Ionicons name="person-circle" size={80} color="#CCCCCC" />
         </View>
         <Text style={styles.userName}>ユーザー名</Text>
-        <Text style={styles.userSubText}>user@example.com</Text>
 
         {/* ポイント表示 */}
         <View style={styles.pointContainer}>
@@ -47,7 +46,7 @@ return (
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#F7F9F5',
   },
   contentContainer: {
     padding: 16,
@@ -106,7 +105,7 @@ const styles = StyleSheet.create({
   },
   menuCard: {
     width: '48%',//1行に２つ並ぶサイズ（約48%*2 +　隙間）に
-    aspectRatio: 3/4,//縦横比を3:4に固定
+    aspectRatio: 4/3,//縦横比を4:3に固定
     borderRadius: 16,
     padding: 12,
     justifyContent: 'center',
