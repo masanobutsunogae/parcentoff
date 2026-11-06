@@ -1,0 +1,41 @@
+
+[
+  {
+    "id": "post001",
+    "storeId": "store001",
+    "productName": "お弁当",
+    "originalPrice": 600,
+    "discountPrice": 300,
+    "discountRate": 50,
+    "postedAt": "2026-11-06T12:00:00"
+  },
+  {
+    "id": "post002",
+    "storeId": "store002",
+    "productName": "菓子パン",
+    "originalPrice": 200,
+    "discountPrice": 140,
+    "discountRate": 30,
+    "postedAt": "2026-11-06T11:30:00"
+  },
+  {
+    "id": "post003",
+    "storeId": "store003",
+    "productName": "お惣菜",
+    "originalPrice": 400,
+    "discountPrice": 200,
+    "discountRate": 50,
+    "postedAt": "2026-11-06T10:00:00"
+  },
+  {
+  "id": "post004",
+  "storeId": null,
+  "productName": "値引きのお弁当",
+  "originalPrice": 600,
+  "discountPrice": 300,
+  "discountRate": 50,
+  "postedAt": "2026-11-06T12:30:00",
+  "latitude": 35.1685,
+  "longitude": 136.8840
+ }
+]
