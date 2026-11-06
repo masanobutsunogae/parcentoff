@@ -1,0 +1,37 @@
+[
+  {
+    "id": "store001",
+    "name": "サンプルスーパー名古屋店",
+    "address": "愛知県名古屋市中村区名駅1丁目",
+    "latitude": 35.1709,
+    "longitude": 136.8815
+  },
+  {
+    "id": "store002",
+    "name": "サンプルコンビニ栄店",
+    "address": "愛知県名古屋市中区栄3丁目",
+    "latitude": 35.1663,
+    "longitude": 136.9066
+  },
+  {
+    "id": "store003",
+    "name": "サンプルスーパー金山店",
+    "address": "愛知県名古屋市中区金山1丁目",
+    "latitude": 35.1428,
+    "longitude": 136.9007
+  },
+  {
+    "id": "store004",
+    "name": "サンプルスーパー店",
+    "address": "愛知県",
+    "latitude": 35.1528,
+    "longitude": 136.9007
+  },
+  {
+    "id": "store005",
+    "name": "サンプルスーパー金",
+    "address": "名古屋市",
+    "latitude": 35.1628,
+    "longitude": 136.9007
+  }
+]
