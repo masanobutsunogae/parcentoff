@@ -39,7 +39,7 @@ export default function AppTabs() {
           </TabTrigger>
 
           <TabTrigger name="favorites" href="/game" asChild>
-            <TabButton>お気に入り</TabButton>
+            <TabButton>ゲーム</TabButton>
           </TabTrigger>
 
           <TabTrigger name="mypage" href="/mypage" asChild>
