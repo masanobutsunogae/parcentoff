@@ -1,5 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useRouter } from 'expo-router';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 // ▼ 1. 「基本的な使い方」の内容（ここを自由に書き換えてください）
 const GUIDE_ITEMS = [
@@ -46,40 +48,60 @@ const FAQ_ITEMS = [
 ];
 
 export default function HelpScreen() {
+  const router = useRouter();
+
+  const handleGoBack = () => {
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace('/mypage');
+    }
+  };
+
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.container}>
-      {/* 上部の見出しエリア */}
-      <View style={styles.header}>
-        <Ionicons name="help-circle-outline" size={64} color="#7ED321" style={styles.icon} />
-        <Text style={styles.title}>アプリの使い方</Text>
-        <Text style={styles.description}>
-          アプリの基本的な操作手順や、{'\n'}
-          よくある質問をまとめています。
-        </Text>
+    <SafeAreaView style={styles.screen} edges={['top']}>
+      {/* 上部の戻るバー */}
+      <View style={styles.topBar}>
+        <TouchableOpacity onPress={handleGoBack} style={styles.backButton} activeOpacity={0.7}>
+          <Ionicons name="arrow-back" size={24} color="#333" />
+          <Text style={styles.backText}>マイページ</Text>
+        </TouchableOpacity>
       </View>
 
-      {/* 基本的な使い方セクション */}
-      <Text style={styles.sectionTitle}>基本的な使い方</Text>
-      {GUIDE_ITEMS.map((item, index) => (
-        <View key={index} style={styles.card}>
-          <View style={styles.cardHeader}>
-            <Ionicons name={item.icon} size={22} color={item.color} />
-            <Text style={[styles.stepBadge, { color: item.color }]}>{item.step}</Text>
-            <Text style={styles.cardTitle}>{item.title}</Text>
-          </View>
-          <Text style={styles.cardText}>{item.description}</Text>
+      <ScrollView contentContainerStyle={styles.container}>
+        {/* 上部の見出しエリア */}
+        <View style={styles.header}>
+          <Ionicons name="help-circle-outline" size={64} color="#7ED321" style={styles.icon} />
+          <Text style={styles.title}>アプリの使い方</Text>
+          <Text style={styles.description}>
+            アプリの基本的な操作手順や、{'\n'}
+            よくある質問をまとめています。
+          </Text>
         </View>
-      ))}
 
-      {/* よくある質問セクション */}
-      <Text style={styles.sectionTitle}>よくある質問（FAQ）</Text>
-      {FAQ_ITEMS.map((faq, index) => (
-        <View key={index} style={styles.card}>
-          <Text style={styles.questionText}>Q. {faq.q}</Text>
-          <Text style={styles.answerText}>A. {faq.a}</Text>
-        </View>
-      ))}
-    </ScrollView>
+        {/* 基本的な使い方セクション */}
+        <Text style={styles.sectionTitle}>基本的な使い方</Text>
+        {GUIDE_ITEMS.map((item, index) => (
+          <View key={index} style={styles.card}>
+            <View style={styles.cardHeader}>
+              <Ionicons name={item.icon} size={22} color={item.color} />
+              <Text style={[styles.stepBadge, { color: item.color }]}>{item.step}</Text>
+              <Text style={styles.cardTitle}>{item.title}</Text>
+            </View>
+            <Text style={styles.cardText}>{item.description}</Text>
+          </View>
+        ))}
+
+        {/* よくある質問セクション */}
+        <Text style={styles.sectionTitle}>よくある質問（FAQ）</Text>
+        {FAQ_ITEMS.map((faq, index) => (
+          <View key={index} style={styles.card}>
+            <Text style={styles.questionText}>Q. {faq.q}</Text>
+            <Text style={styles.answerText}>A. {faq.a}</Text>
+          </View>
+        ))}
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
@@ -87,6 +109,25 @@ const styles = StyleSheet.create({
   screen: {
     flex: 1,
     backgroundColor: '#F7F9F5',
+  },
+  topBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#EEEEEE',
+  },
+  backButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  backText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
   },
   container: {
     padding: 20,
