@@ -1,8 +1,8 @@
+import { PointProvider } from '@/context/PointContext';
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import 'leaflet/dist/leaflet.css';
 import { useColorScheme } from 'react-native';
-
 
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
 
@@ -11,6 +11,7 @@ SplashScreen.preventAutoHideAsync();
 export default function RootLayout() {
   const colorScheme = useColorScheme();
   return (
+    <PointProvider>
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <AnimatedSplashOverlay />
       <Stack screenOptions={{ headerShown: false }} >
@@ -21,5 +22,7 @@ export default function RootLayout() {
         <Stack.Screen name="mpage/info" />
       </Stack>
     </ThemeProvider>
+    </PointProvider>
+
   );
 }

@@ -2,9 +2,11 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { usePoints } from '@/context/PointContext';
 
 export default function MyPageScreen() {
   const router = useRouter();
+  const { points } = usePoints();
   const menuItems= [
     { id: 'help' , title:'ヘルプ'    , icon:'help-circle-outline', color:'#7ED321', bg:'#F4FCE3'},
     { id: 'info' , title:'情報を提供する', icon:'information-circle-outline', color:'#9013FE', bg:'#F8F0FF'},
@@ -24,7 +26,7 @@ return (
         <View style={styles.pointContainer}>
           <Ionicons name="ribbon-outline" size={20} color="#FFD700" />
           <Text style={styles.pointLabel}>保有ポイント:</Text>
-          <Text style={styles.pointValue}>1,250 pt</Text>
+          <Text style={styles.pointValue}>{points.toLocaleString()} pt</Text>
         </View>
       </View>
 
