@@ -35,18 +35,12 @@ return (
             key={item.id}
             style={[styles.menuCard, { backgroundColor: item.bg }]}
             activeOpacity={0.8}
-            // onPress={() => {
-            //   let path = '';
-            //   if (item.id === 'photo') {
-            //     path = '/photo';
-            //   } else if (item.id === 'game') {
-            //     path = '/game';
-            //   } else if (item.id === 'help') {
-            //     path = '/help';
-            //   }
-            //   router.push(path);
-            // }}
-            onPress={() => {console.log(`Pressed ${item.title}`);}}
+
+            //console.logでlogとしてどこを押したかを表示
+            // onPress={() => {console.log(`Pressed ${item.title}`);}}
+            onPress={() => {router.push(`/${item.id}` as any);
+             console.log(`Navigating to ${item.id}`);
+            }}
           >
             <Ionicons name={item.icon as any} size={36} color={item.color} style={styles.menuIcon} />
             <Text style={styles.menuTitle}>{item.title}</Text>

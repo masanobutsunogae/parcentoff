@@ -25,7 +25,11 @@ app-tabs.web.tsx
 
 マイページにおけるアイコン表示を行うために
 npm install @expo/vector-icons
-を実行してください
+を実行してください。
+
+React Navigatorの利用をするため
+npm install @react-navigation/native
+を実行してください。
 
 実際に動かすときはターミナルで
 npx expo start

@@ -3,6 +3,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import 'leaflet/dist/leaflet.css';
 import { useColorScheme } from 'react-native';
 
+
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
 import AppTabs from '@/components/app-tabs';
 
