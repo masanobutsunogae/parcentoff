@@ -38,7 +38,7 @@ export default function AppTabs() {
             <TabButton>探す</TabButton>
           </TabTrigger>
 
-          <TabTrigger name="favorites" href="/game" asChild>
+          <TabTrigger name="game" href="/game" asChild>
             <TabButton>ゲーム</TabButton>
           </TabTrigger>
 
