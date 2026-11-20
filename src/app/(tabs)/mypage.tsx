@@ -6,10 +6,10 @@ import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-nati
 export default function MyPageScreen() {
   const router = useRouter();
   const menuItems= [
-    { id: 'photo', title:'写真で検索', icon:'image-outline', color:'#4A90E2', bg:'#EBF3FF'},
-    { id: 'game' , title:'ゲーム'    , icon:'game-controller-outline', color:'#F5A623', bg:'#FFF7E6'},
     { id: 'help' , title:'ヘルプ'    , icon:'help-circle-outline', color:'#7ED321', bg:'#F4FCE3'},
     { id: 'info' , title:'情報を提供する', icon:'information-circle-outline', color:'#9013FE', bg:'#F8F0FF'},
+    { id: 'photo', title:'写真で検索', icon:'image-outline', color:'#4A90E2', bg:'#EBF3FF'},
+    { id: 'game' , title:'ゲーム'    , icon:'game-controller-outline', color:'#F5A623', bg:'#FFF7E6'},
   ];
 return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>

@@ -16,7 +16,7 @@ export default function RootLayout() {
       <Stack screenOptions={{ headerShown: false }} >
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="mpage/help" />
-        <Stack.Screen name="mpage/game" />
+        <Stack.Screen name="mpage/favorites" />
         <Stack.Screen name="mpage/photo" />
         <Stack.Screen name="mpage/info" />
       </Stack>
