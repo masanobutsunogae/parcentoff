@@ -38,7 +38,7 @@ return (
 
             //console.logでlogとしてどこを押したかを表示
             // onPress={() => {console.log(`Pressed ${item.title}`);}}
-            onPress={() => {router.push(`/${item.id}` as any);
+            onPress={() => {router.push(`/mpage/${item.id}` as any);
              console.log(`Navigating to ${item.id}`);
             }}
           >

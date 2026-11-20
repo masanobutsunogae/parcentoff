@@ -8,8 +8,8 @@ import {
   View,
 } from 'react-native';
 
-import postsData from './post/posts.json';
-import storesData from './store/stores.json';
+import postsData from '../post/posts.json';
+import storesData from '../store/stores.json';
 
 import 'leaflet/dist/leaflet.css';
 
