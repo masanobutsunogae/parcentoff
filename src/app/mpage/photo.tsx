@@ -1,11 +1,16 @@
 import {
-  type UsageTiming
+  getVegetableGuide,
+  predictRipeness,
+  type RipenessPrediction,
+  type TouchFeel,
+  type UsageTiming,
 } from '@/photoservices/ripenessPredictor';
 import { Ionicons } from '@expo/vector-icons';
-//import * as ImagePicker from 'expo-image-picker';
+import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
+  ActivityIndicator,
   Alert,
   Image,
   Platform,
@@ -14,11 +19,8 @@ import {
   StyleSheet,
   Text,
   TextInput,
-  View
+  View,
 } from 'react-native';
-
-
-// type UsageTiming = 'today' | 'tomorrow' | 'later';
 
 const USAGE_OPTIONS: { id: UsageTiming; label: string; hint: string }[] = [
   { id: 'today', label: '今日すぐ使う', hint: '食べごろ・完熟向き' },
@@ -26,7 +28,14 @@ const USAGE_OPTIONS: { id: UsageTiming; label: string; hint: string }[] = [
   { id: 'later', label: '数日〜1週間後', hint: 'まだ青い・硬めが安心' },
 ];
 
-const SUGGESTED_VEGGIES = ['トマト', 'アボカド', 'バナナ', 'ピーマン', 'ナス'];
+const TOUCH_OPTIONS: { id: TouchFeel; label: string }[] = [
+  { id: 'unknown', label: '未確認' },
+  { id: 'firm_or_light', label: '硬め・軽め' },
+  { id: 'balanced', label: '適度・普通' },
+  { id: 'soft_or_heavy', label: '柔らかめ・重め' },
+];
+
+const SUGGESTED_VEGGIES = ['アボカド', 'トマト', 'バナナ', 'ピーマン', 'ナス'];
 
 export default function PhotoScreen() {
   const router = useRouter();
@@ -34,7 +43,13 @@ export default function PhotoScreen() {
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [usageTiming, setUsageTiming] = useState<UsageTiming>('today');
   const [vegetableName, setVegetableName] = useState('');
-  const [resultText, setResultText] = useState<string | null>(null);
+  const [cookingNote, setCookingNote] = useState('');
+  const [touchFeel, setTouchFeel] = useState<TouchFeel>('unknown');
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [prediction, setPrediction] = useState<RipenessPrediction | null>(null);
+
+  const trimmedVegetable = vegetableName.trim();
+  const activeGuide = trimmedVegetable ? getVegetableGuide(trimmedVegetable) : null;
 
   const handleClose = () => {
     if (router.canGoBack()) {
@@ -64,7 +79,7 @@ export default function PhotoScreen() {
 
     if (!result.canceled && result.assets[0]) {
       setImageUri(result.assets[0].uri);
-      setResultText(null);
+      setPrediction(null);
     }
   };
 
@@ -97,22 +112,34 @@ export default function PhotoScreen() {
 
     if (!result.canceled && result.assets[0]) {
       setImageUri(result.assets[0].uri);
-      setResultText(null);
+      setPrediction(null);
     }
   };
 
-  // 熟度チェック実行（仮判定）
-  const handleAnalyze = () => {
+  // 熟度チェック実行
+  const handleAnalyze = async () => {
     if (!imageUri) {
       Alert.alert('画像がありません', '先に写真を選ぶか撮影してください。');
       return;
     }
 
-    const trimmedVeggie = vegetableName.trim() || '野菜（未指定）';
-    const selectedOption = USAGE_OPTIONS.find((opt) => opt.id === usageTiming);
-    setResultText(
-      `判定（仮）：「${trimmedVeggie}」の画像を取り込みました。「${selectedOption?.label}」用途としてチェック完了です。`
-    );
+    setIsAnalyzing(true);
+    setPrediction(null);
+    try {
+      const res = await predictRipeness({
+        imageUri,
+        vegetableName,
+        usageTiming,
+        touchFeel,
+        cookingNote,
+      });
+      setPrediction(res);
+    } catch (e) {
+      console.warn(e);
+      Alert.alert('判定エラー', '熟度チェック中にエラーが発生しました。');
+    } finally {
+      setIsAnalyzing(false);
+    }
   };
 
   return (
@@ -136,9 +163,9 @@ export default function PhotoScreen() {
         <View style={styles.introCard}>
           <Ionicons name="image-outline" size={32} color="#4A90E2" />
           <View style={styles.introTextWrap}>
-            <Text style={styles.title}>写真で野菜の熟し度をチェック</Text>
+            <Text style={styles.title}>野菜の確認ポイントと熟し度チェック</Text>
             <Text style={styles.description}>
-              使う料理や予定日に合わせて、適切な熟度の野菜を見極めやすくします。
+              食材ごとの確認ポイントを表で確認し、使う予定日や料理に合わせて写真から熟度を目安判定します。
             </Text>
           </View>
         </View>
@@ -152,7 +179,10 @@ export default function PhotoScreen() {
               return (
                 <Pressable
                   key={opt.id}
-                  onPress={() => setUsageTiming(opt.id)}
+                  onPress={() => {
+                    setUsageTiming(opt.id);
+                    setPrediction(null);
+                  }}
                   style={[styles.optionCard, active && styles.optionCardActive]}
                 >
                   <Text style={[styles.optionLabel, active && styles.optionLabelActive]}>
@@ -174,22 +204,22 @@ export default function PhotoScreen() {
             value={vegetableName}
             onChangeText={(text) => {
               setVegetableName(text);
-              setResultText(null);
+              setPrediction(null);
             }}
-            placeholder="例：トマト、アボカド、バナナ"
+            placeholder="例：アボカド、トマト、バナナ"
             placeholderTextColor="#99A399"
             style={styles.veggieInput}
             maxLength={30}
           />
           <View style={styles.chipRow}>
             {SUGGESTED_VEGGIES.map((veggie) => {
-              const selected = vegetableName.trim() === veggie;
+              const selected = trimmedVegetable === veggie;
               return (
                 <Pressable
                   key={veggie}
                   onPress={() => {
                     setVegetableName(veggie);
-                    setResultText(null);
+                    setPrediction(null);
                   }}
                   style={[styles.chip, selected && styles.chipSelected]}
                 >
@@ -202,12 +232,74 @@ export default function PhotoScreen() {
           </View>
         </View>
 
+        {/* 野菜入力・選択時に表示する確認ポイント表 */}
+        {activeGuide ? (
+          <View style={styles.guideCard}>
+            <Text style={styles.guideTitle}>{activeGuide.displayName} の確認ポイント表</Text>
+            <Text style={styles.guideSummary}>{activeGuide.summary}</Text>
+
+            <View style={styles.tableWrap}>
+              {activeGuide.checklist.map((row) => (
+                <View key={row.point} style={styles.tableRow}>
+                  <Text style={styles.tablePoint}>{row.point}</Text>
+                  <Text style={styles.tableGood}>よい目安：{row.goodSign}</Text>
+                  <Text style={styles.tableCaution}>避けたい目安：{row.cautionSign}</Text>
+                  <Text style={styles.tablePhotoNote}>写真での補足：{row.photoNote}</Text>
+                </View>
+              ))}
+            </View>
+          </View>
+        ) : null}
+
+        {/* 料理・用途メモと手触り（任意） */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>どんな料理・用途で使いますか？（任意）</Text>
+          <TextInput
+            value={cookingNote}
+            onChangeText={(text) => {
+              setCookingNote(text);
+              setPrediction(null);
+            }}
+            placeholder="例：サラダ、ポキ丼、ディップ、トマトソース"
+            placeholderTextColor="#99A399"
+            style={styles.veggieInput}
+            maxLength={40}
+          />
+
+          <Text style={styles.subLabel}>手触り・重さの感覚（任意）</Text>
+          <View style={styles.touchRow}>
+            {TOUCH_OPTIONS.map((opt) => {
+              const active = touchFeel === opt.id;
+              return (
+                <Pressable
+                  key={opt.id}
+                  onPress={() => {
+                    setTouchFeel(opt.id);
+                    setPrediction(null);
+                  }}
+                  style={[styles.touchChip, active && styles.touchChipActive]}
+                >
+                  <Text style={[styles.touchChipText, active && styles.touchChipTextActive]}>
+                    {opt.label}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        </View>
+
         {/* 画像プレビューエリア */}
         <View style={styles.previewBox}>
           {imageUri ? (
             <>
               <Image source={{ uri: imageUri }} style={styles.previewImage} resizeMode="cover" />
-              <Pressable onPress={() => setImageUri(null)} style={styles.clearImageButton}>
+              <Pressable
+                onPress={() => {
+                  setImageUri(null);
+                  setPrediction(null);
+                }}
+                style={styles.clearImageButton}
+              >
                 <Ionicons name="trash-outline" size={16} color="#FFFFFF" />
                 <Text style={styles.clearImageText}>画像をクリア</Text>
               </Pressable>
@@ -238,14 +330,29 @@ export default function PhotoScreen() {
         {/* チェック実行ボタン */}
         <Pressable
           onPress={handleAnalyze}
-          style={[styles.analyzeBtn, !imageUri && styles.analyzeBtnDisabled]}
+          disabled={!imageUri || isAnalyzing}
+          style={[
+            styles.analyzeBtn,
+            (!imageUri || isAnalyzing) && styles.analyzeBtnDisabled,
+          ]}
         >
-          <Text style={styles.analyzeBtnText}>熟し度をチェックする</Text>
+          {isAnalyzing ? (
+            <ActivityIndicator color="#FFFFFF" />
+          ) : (
+            <Text style={styles.analyzeBtnText}>熟し度をチェックする</Text>
+          )}
         </Pressable>
 
-        {resultText ? (
+        {prediction ? (
           <View style={styles.resultBox}>
-            <Text style={styles.resultText}>{resultText}</Text>
+            <Text style={styles.resultTitle}>
+              {prediction.vegetableName}：{prediction.stageLabel}（スコア {prediction.ripenessScore}）
+            </Text>
+            <Text style={styles.resultMatch}>{prediction.matchLabel}</Text>
+            <Text style={styles.resultText}>{prediction.advice}</Text>
+            {prediction.debugInfo ? (
+              <Text style={styles.debugText}>{prediction.debugInfo}</Text>
+            ) : null}
           </View>
         ) : null}
       </ScrollView>
@@ -316,6 +423,12 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#243024',
   },
+  subLabel: {
+    fontSize: 13,
+    fontWeight: 'bold',
+    color: '#3A473A',
+    marginTop: 4,
+  },
   optionList: {
     flexDirection: 'row',
     gap: 8,
@@ -382,6 +495,80 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   chipTextSelected: {
+    color: '#FFFFFF',
+  },
+  guideCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#D7DDD5',
+    padding: 14,
+    gap: 10,
+  },
+  guideTitle: {
+    fontSize: 15,
+    fontWeight: 'bold',
+    color: '#243024',
+  },
+  guideSummary: {
+    fontSize: 12,
+    color: '#526052',
+    lineHeight: 18,
+  },
+  tableWrap: {
+    gap: 8,
+  },
+  tableRow: {
+    backgroundColor: '#F7F9F5',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#E3E8E1',
+    padding: 10,
+    gap: 3,
+  },
+  tablePoint: {
+    fontSize: 13,
+    fontWeight: 'bold',
+    color: '#243024',
+  },
+  tableGood: {
+    fontSize: 12,
+    color: '#1E5E2B',
+    lineHeight: 17,
+  },
+  tableCaution: {
+    fontSize: 12,
+    color: '#8A3B12',
+    lineHeight: 17,
+  },
+  tablePhotoNote: {
+    fontSize: 11,
+    color: '#5C695C',
+    lineHeight: 16,
+  },
+  touchRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  touchChip: {
+    paddingHorizontal: 11,
+    paddingVertical: 7,
+    borderRadius: 10,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#D7DDD5',
+  },
+  touchChipActive: {
+    backgroundColor: '#35A853',
+    borderColor: '#35A853',
+  },
+  touchChipText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#4A554A',
+  },
+  touchChipTextActive: {
     color: '#FFFFFF',
   },
   previewBox: {
@@ -470,11 +657,26 @@ const styles = StyleSheet.create({
     padding: 14,
     borderWidth: 1,
     borderColor: '#B7DFC0',
+    gap: 6,
+  },
+  resultTitle: {
+    color: '#1E5E2B',
+    fontSize: 15,
+    fontWeight: 'bold',
+  },
+  resultMatch: {
+    color: '#287A3B',
+    fontSize: 13,
+    fontWeight: 'bold',
   },
   resultText: {
-    color: '#1E5E2B',
+    color: '#243024',
     fontSize: 14,
-    fontWeight: 'bold',
     lineHeight: 20,
+  },
+  debugText: {
+    color: '#596659',
+    fontSize: 12,
+    marginTop: 2,
   },
 });
