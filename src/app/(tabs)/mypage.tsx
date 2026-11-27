@@ -1,4 +1,6 @@
 //マイページ画面
+import { UserAvatarIcon } from '@/components/UserAvatarIcon';
+import { useAvatar } from '@/context/AvatarContext';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -7,6 +9,7 @@ import { usePoints } from '@/context/PointContext';
 export default function MyPageScreen() {
   const router = useRouter();
   const { points } = usePoints();
+  const { rescuedCount, savedYen } = useAvatar();
   const menuItems= [
     { id: 'help' , title:'ヘルプ'    , icon:'help-circle-outline', color:'#7ED321', bg:'#F4FCE3'},
     { id: 'info' , title:'情報を提供する', icon:'information-circle-outline', color:'#9013FE', bg:'#F8F0FF'},
@@ -18,16 +21,28 @@ return (
       {/* ユーザープロフィールエリア */}
       <View style={styles.profileCard}>
         <View style={styles.avatarContainer}>
-          <Ionicons name="person-circle" size={80} color="#CCCCCC" />
+          <UserAvatarIcon size={84} />
         </View>
         <Text style={styles.userName}>ユーザー名</Text>
 
         {/* ポイント表示 */}
         <View style={styles.pointContainer}>
           <Ionicons name="ribbon-outline" size={20} color="#FFD700" />
-          <Text style={styles.pointLabel}>保有ポイント:</Text>
+          <Text style={styles.pointLabel}>保有エコポイント:</Text>
           <Text style={styles.pointValue}>{points.toLocaleString()} pt</Text>
         </View>
+        {/* 救済・節約実績 */}
+       <View style={styles.contributionRow}>
+         <View style={styles.contributionBox}>
+           <Text style={styles.contributionTitle}>救った食材</Text>
+           <Text style={styles.contributionNumber}>{rescuedCount} 個</Text>
+         </View>
+         <View style={styles.divider} />
+         <View style={styles.contributionBox}>
+           <Text style={styles.contributionTitle}>節約お手伝い額</Text>
+           <Text style={styles.contributionNumber}>{savedYen.toLocaleString()} 円</Text>
+         </View>
+       </View>
       </View>
 
       {/* メニューカード一覧（2列×自動折り返し） */}
@@ -106,6 +121,36 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#D48800',
   },
+  contributionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '100%',
+    marginTop: 14,
+    backgroundColor: '#F6FAF7',
+    borderRadius: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+  },
+  contributionBox: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  divider: {
+    width: 1,
+    height: 28,
+    backgroundColor: '#DCE8DF',
+  },
+  contributionTitle: {
+    fontSize: 12,
+    color: '#52796F',
+  },
+  contributionNumber: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#2F5D50',
+    marginTop: 2,
+  },
+
   menuGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
