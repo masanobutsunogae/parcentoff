@@ -34,3 +34,7 @@ npm install @react-navigation/native
 実際に動かすときはターミナルで
 npx expo start
 を実行する
+
+データベースを使用するためにはターミナルで
+npm install firebase
+を実行する
