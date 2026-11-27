@@ -8,8 +8,8 @@ import {
   View,
 } from 'react-native';
 
-import postsData from '../post/posts.json';
-import storesData from '../store/stores.json';
+import { addDoc, collection, onSnapshot } from 'firebase/firestore';
+import { db } from '../../../firebaseConfig';
 
 import 'leaflet/dist/leaflet.css';
 
@@ -37,16 +37,20 @@ export default function SearchScreen() {
   const [MapComponent, setMapComponent] = useState<any>(null);
   const [selectedStore, setSelectedStore] = useState<Store | null>(null);
   const [screen, setScreen] = useState<'map' | 'form'>('map');
+  const [isPickingLocation, setIsPickingLocation] = useState(false);
+  const [unregisteredLocation, setUnregisteredLocation] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveMessage, setSaveMessage] = useState('');
 
-  // 今回は画面・入力操作のみを実装し、投稿データは保存しません。
+  // Firestoreから取得した店舗・商品データ
+  const [stores, setStores] = useState<Store[]>([]);
+  const [posts, setPosts] = useState<Post[]>([]);
+
   const [productName, setProductName] = useState('');
   const [originalPrice, setOriginalPrice] = useState('');
   const [discountPrice, setDiscountPrice] = useState('');
   const [description, setDescription] = useState('');
   const [showPreviewMessage, setShowPreviewMessage] = useState(false);
-
-  const stores = storesData as Store[];
-  const posts = postsData as Post[];
 
   useEffect(() => {
     let active = true;
@@ -62,6 +66,44 @@ export default function SearchScreen() {
     };
   }, []);
 
+  // Firestoreの店舗・商品データをリアルタイムで監視
+  useEffect(() => {
+    const unsubscribeStores = onSnapshot(
+      collection(db, 'stores'),
+      (snapshot) => {
+        const storeList = snapshot.docs.map((document) => ({
+          ...document.data(),
+          id: document.id,
+        })) as Store[];
+
+        setStores(storeList);
+      },
+      (error) => {
+        console.error('店舗情報の取得エラー:', error);
+      }
+    );
+
+    const unsubscribePosts = onSnapshot(
+      collection(db, 'posts'),
+      (snapshot) => {
+        const postList = snapshot.docs.map((document) => ({
+          ...document.data(),
+          id: document.id,
+        })) as Post[];
+
+        setPosts(postList);
+      },
+      (error) => {
+        console.error('商品情報の取得エラー:', error);
+      }
+    );
+
+    return () => {
+      unsubscribeStores();
+      unsubscribePosts();
+    };
+  }, []);
+
   const discountRate = useMemo(() => {
     const original = Number(originalPrice);
     const discounted = Number(discountPrice);
@@ -73,14 +115,75 @@ export default function SearchScreen() {
 
   const openPostForm = (store: Store) => {
     setSelectedStore(store);
+    setUnregisteredLocation(null);
     setShowPreviewMessage(false);
+    setSaveMessage('');
     setScreen('form');
+  };
+
+  const startUnregisteredPost = () => {
+    setIsPickingLocation(true);
+    setSaveMessage('');
+  };
+
+  const openUnregisteredPostForm = (latitude: number, longitude: number) => {
+    setSelectedStore(null);
+    setUnregisteredLocation({ latitude, longitude });
+    setIsPickingLocation(false);
+    setShowPreviewMessage(false);
+    setSaveMessage('');
+    setScreen('form');
+  };
+
+  const savePost = async () => {
+    if (!productName.trim() || !originalPrice || !discountPrice || discountRate === null) {
+      setSaveMessage('商品名・通常価格・値引き価格を正しく入力してください。');
+      return;
+    }
+    if (!selectedStore && !unregisteredLocation) {
+      setSaveMessage('投稿する場所を地図上で選択してください。');
+      return;
+    }
+
+    setIsSaving(true);
+    setSaveMessage('');
+    try {
+      await addDoc(collection(db, 'posts'), {
+        storeId: selectedStore ? selectedStore.id : null,
+        productName: productName.trim(),
+        originalPrice: Number(originalPrice),
+        discountPrice: Number(discountPrice),
+        discountRate,
+        description: description.trim(),
+        postedAt: new Date().toISOString(),
+        ...(selectedStore ? {} : {
+          latitude: unregisteredLocation!.latitude,
+          longitude: unregisteredLocation!.longitude,
+        }),
+      });
+      setProductName('');
+      setOriginalPrice('');
+      setDiscountPrice('');
+      setDescription('');
+      setSelectedStore(null);
+      setUnregisteredLocation(null);
+      setShowPreviewMessage(false);
+      setScreen('map');
+      setSaveMessage('投稿を保存しました。');
+    } catch (error) {
+      console.error('投稿の保存に失敗しました:', error);
+      setSaveMessage('投稿を保存できませんでした。Firestoreの設定や通信状態をご確認ください。');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const closePostForm = () => {
     // 地図コンポーネントはアンマウントせず非表示にするため、戻った際も地図の位置を保ちます。
     setScreen('map');
     setShowPreviewMessage(false);
+    setSelectedStore(null);
+    setUnregisteredLocation(null);
   };
 
   if (!MapComponent) {
@@ -92,7 +195,15 @@ export default function SearchScreen() {
     );
   }
 
-  const { MapContainer, TileLayer, CircleMarker, Popup } = MapComponent;
+  const { MapContainer, TileLayer, CircleMarker, Popup, useMapEvents } = MapComponent;
+  const MapClickHandler = ({ onSelect }: { onSelect: (latitude: number, longitude: number) => void }) => {
+    useMapEvents({
+      click(event: any) {
+        onSelect(event.latlng.lat, event.latlng.lng);
+      },
+    });
+    return null;
+  };
   const center: [number, number] = [35.1709, 136.8815];
 
   const inputStyle = {
@@ -119,6 +230,18 @@ export default function SearchScreen() {
         <Text style={{ fontSize: 23, fontWeight: 'bold', marginBottom: 12, color: '#243024' }}>
           お店・商品を地図から探す
         </Text>
+        <Pressable
+          onPress={startUnregisteredPost}
+          style={{ backgroundColor: '#F39C35', paddingVertical: 11, paddingHorizontal: 14, borderRadius: 9, alignItems: 'center', marginBottom: 10 }}
+        >
+          <Text style={{ color: '#FFFFFF', fontWeight: 'bold' }}>店舗を指定せずに投稿</Text>
+        </Pressable>
+        {isPickingLocation ? (
+          <Text style={{ color: '#805A16', marginBottom: 8 }}>地図上の投稿したい場所をタップしてください。</Text>
+        ) : null}
+        {saveMessage ? (
+          <Text style={{ color: saveMessage.includes('保存しました') ? '#287A3B' : '#B34B42', marginBottom: 8 }}>{saveMessage}</Text>
+        ) : null}
 
         <View style={{ flex: 1, minHeight: 400 }}>
           <MapContainer
@@ -126,6 +249,9 @@ export default function SearchScreen() {
             zoom={13}
             style={{ height: '100%', width: '100%' }}
           >
+            {isPickingLocation ? (
+              <MapClickHandler onSelect={openUnregisteredPostForm} />
+            ) : null}
             <TileLayer
               attribution="&copy; OpenStreetMap contributors"
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -260,7 +386,9 @@ export default function SearchScreen() {
             <Text style={{ color: '#243024', fontSize: 16, fontWeight: 'bold' }}>
               {selectedStore?.name ?? '店舗が選択されていません'}
             </Text>
-            <Text style={{ color: '#596659', fontSize: 13 }}>{selectedStore?.address}</Text>
+            <Text style={{ color: '#596659', fontSize: 13 }}>
+              {selectedStore?.address ?? (unregisteredLocation ? `地図上の位置：${unregisteredLocation.latitude.toFixed(5)}, ${unregisteredLocation.longitude.toFixed(5)}` : '')}
+            </Text>
           </View>
 
           <View style={{ gap: 7 }}>
@@ -327,17 +455,18 @@ export default function SearchScreen() {
           </View>
 
           <Pressable
-            onPress={() => setShowPreviewMessage(true)}
+            onPress={savePost}
+            disabled={isSaving}
             style={{
               backgroundColor: '#35A853',
               borderRadius: 10,
               paddingVertical: 14,
               alignItems: 'center',
-              opacity: productName.trim() && originalPrice && discountPrice && discountRate !== null ? 1 : 0.55,
+              opacity: productName.trim() && originalPrice && discountPrice && discountRate !== null && !isSaving ? 1 : 0.55,
             }}
           >
             <Text style={{ color: '#FFFFFF', fontWeight: 'bold', fontSize: 16 }}>
-              入力内容を確認
+              {isSaving ? '投稿中...' : '投稿する'}
             </Text>
           </Pressable>
 
@@ -349,10 +478,10 @@ export default function SearchScreen() {
                   ? `${productName}：${originalPrice}円 → ${discountPrice}円（${discountRate}% OFF）`
                   : '商品名・通常価格・値引き価格を正しく入力してください。'}
               </Text>
-              <Text style={{ color: '#805A16', fontSize: 12 }}>
-                現在は画面確認用のため、投稿内容は保存されません。
-              </Text>
             </View>
+          ) : null}
+          {saveMessage ? (
+            <Text style={{ color: saveMessage.includes('保存しました') ? '#287A3B' : '#B34B42' }}>{saveMessage}</Text>
           ) : null}
         </ScrollView>
       </View>
