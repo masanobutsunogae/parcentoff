@@ -1,3 +1,6 @@
+import {
+  type UsageTiming
+} from '@/photoservices/ripenessPredictor';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
@@ -10,10 +13,12 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  View,
+  TextInput,
+  View
 } from 'react-native';
 
-type UsageTiming = 'today' | 'tomorrow' | 'later';
+
+// type UsageTiming = 'today' | 'tomorrow' | 'later';
 
 const USAGE_OPTIONS: { id: UsageTiming; label: string; hint: string }[] = [
   { id: 'today', label: '今日すぐ使う', hint: '食べごろ・完熟向き' },
@@ -21,11 +26,14 @@ const USAGE_OPTIONS: { id: UsageTiming; label: string; hint: string }[] = [
   { id: 'later', label: '数日〜1週間後', hint: 'まだ青い・硬めが安心' },
 ];
 
+const SUGGESTED_VEGGIES = ['トマト', 'アボカド', 'バナナ', 'ピーマン', 'ナス'];
+
 export default function PhotoScreen() {
   const router = useRouter();
 
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [usageTiming, setUsageTiming] = useState<UsageTiming>('today');
+  const [vegetableName, setVegetableName] = useState('');
   const [resultText, setResultText] = useState<string | null>(null);
 
   const handleClose = () => {
@@ -100,9 +108,10 @@ export default function PhotoScreen() {
       return;
     }
 
+    const trimmedVeggie = vegetableName.trim() || '野菜（未指定）';
     const selectedOption = USAGE_OPTIONS.find((opt) => opt.id === usageTiming);
     setResultText(
-      `判定（仮）：画像を取り込みました。「${selectedOption?.label}」用途としてチェック完了です。`
+      `判定（仮）：「${trimmedVeggie}」の画像を取り込みました。「${selectedOption?.label}」用途としてチェック完了です。`
     );
   };
 
@@ -151,6 +160,41 @@ export default function PhotoScreen() {
                   </Text>
                   <Text style={[styles.optionHint, active && styles.optionHintActive]}>
                     {opt.hint}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        </View>
+
+        {/* 野菜の種類入力欄 */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>何の食材ですか？</Text>
+          <TextInput
+            value={vegetableName}
+            onChangeText={(text) => {
+              setVegetableName(text);
+              setResultText(null);
+            }}
+            placeholder="例：トマト、アボカド、バナナ"
+            placeholderTextColor="#99A399"
+            style={styles.veggieInput}
+            maxLength={30}
+          />
+          <View style={styles.chipRow}>
+            {SUGGESTED_VEGGIES.map((veggie) => {
+              const selected = vegetableName.trim() === veggie;
+              return (
+                <Pressable
+                  key={veggie}
+                  onPress={() => {
+                    setVegetableName(veggie);
+                    setResultText(null);
+                  }}
+                  style={[styles.chip, selected && styles.chipSelected]}
+                >
+                  <Text style={[styles.chipText, selected && styles.chipTextSelected]}>
+                    {veggie}
                   </Text>
                 </Pressable>
               );
@@ -303,6 +347,42 @@ const styles = StyleSheet.create({
   },
   optionHintActive: {
     color: '#EBF3FF',
+  },
+  veggieInput: {
+    borderWidth: 1,
+    borderColor: '#D7DDD5',
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 11,
+    backgroundColor: '#FFFFFF',
+    fontSize: 15,
+    color: '#243024',
+  },
+  chipRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginTop: 2,
+  },
+  chip: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#D7DDD5',
+  },
+  chipSelected: {
+    backgroundColor: '#4A90E2',
+    borderColor: '#4A90E2',
+  },
+  chipText: {
+    fontSize: 13,
+    color: '#4A554A',
+    fontWeight: '600',
+  },
+  chipTextSelected: {
+    color: '#FFFFFF',
   },
   previewBox: {
     width: '100%',
