@@ -2,7 +2,7 @@ import {
   type UsageTiming
 } from '@/photoservices/ripenessPredictor';
 import { Ionicons } from '@expo/vector-icons';
-import * as ImagePicker from 'expo-image-picker';
+//import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
