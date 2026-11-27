@@ -27,10 +27,14 @@ app-tabs.web.tsx
 npm install @expo/vector-icons
 を実行してください。
 
-React Navigatorの利用をするため
-npm install @react-navigation/native
+Imagepickerの利用をするため 
+npx expo install expo-image-picker
 を実行してください。
 
 実際に動かすときはターミナルで
 npx expo start
+を実行する
+
+データベースを使用するためにはターミナルで
+npm install firebase
 を実行する
